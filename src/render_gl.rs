@@ -3,6 +3,8 @@ use std;
 use std::ffi::{CString, CStr};
 use glm;
 
+pub mod utils;
+
 pub struct Program {
     id: gl::types::GLuint,
 }
@@ -159,6 +161,19 @@ pub fn perspective(fovy: f32, aspect: f32, near: f32, far: f32) -> glm::Matrix4<
     let c1 = glm::vec4(0.0, f, 0.0, 0.0);
     let c2 = glm::vec4(0.0, 0.0, (far + near) / (near - far), 1.0);
     let c3 = glm::vec4(0.0, 0.0, (2.0 * far * near) / (near - far), 0.0);
+
+    return glm::Matrix4::new(c0, c1, c2, c3);
+}
+
+pub fn view(eye: glm::Vector3<f32>, target: glm::Vector3<f32>, up: glm::Vector3<f32>) -> glm::Matrix4<f32> {
+    let zaxis = utils::normalize(eye - target);
+    let xaxis = utils::normalize(utils::cross(up, zaxis));
+    let yaxis = utils::cross(zaxis, xaxis);
+
+    let c0 = glm::vec4(xaxis.x, yaxis.x, zaxis.x, 0.0);
+    let c1 = glm::vec4(xaxis.y, yaxis.y, zaxis.y, 0.0);
+    let c2 = glm::vec4(xaxis.z, yaxis.z, zaxis.z, 0.0);
+    let c3 = glm::vec4(0.0, 0.0, 0.0, 1.0);
 
     return glm::Matrix4::new(c0, c1, c2, c3);
 }

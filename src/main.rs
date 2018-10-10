@@ -1,4 +1,4 @@
-#![feature(box_syntax)]
+#![feature(box_syntax, core_intrinsics)]
 
 extern crate sdl2;
 extern crate gl;
@@ -6,9 +6,15 @@ extern crate glm;
 
 use std::os::raw;
 use std::ffi::{CStr, CString};
+use std::collections::HashSet;
+use sdl2::keyboard::Keycode;
 
 pub mod render_gl;
 pub mod chunk;
+
+fn print_type_of<T>(_: &T) {
+    println!("{}", unsafe { std::intrinsics::type_name::<T>() });
+}
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -74,9 +80,14 @@ fn main() {
         &[render_vert_shader, render_geom_shader, render_frag_shader]
     ).unwrap();
 
-    let proj_mat = render_gl::perspective(1.0, 720.0 / 1280.0, 0.02, 128.0);
-    let proj_mat_loc = gl::GetUniformLocation(render_shader_program.id(), CString::new("proj_mat").unwrap().as_ptr());
-    gl::UniformMatrix4fv(proj_mat_loc, 1, gl::FALSE, proj_mat);
+    let proj_mat = render_gl::perspective(1.0, 720.0 / 1280.0, 0.02, 512.0);
+    let view_mat = render_gl::view(glm::Vector3::new(0.0, 0.0, -5.0), glm::Vector3::new(0.0, 0.0, 1.0), glm::Vector3::new(0.0, 1.0, 0.0));
+    let mvp_mat = view_mat * proj_mat;
+
+    unsafe {
+        let mvp_mat_loc = gl::GetUniformLocation(render_shader_program.id(), CString::new("mvp_mat").unwrap().as_ptr());
+        gl::UniformMatrix4fv(mvp_mat_loc, 1, gl::FALSE, render_gl::utils::get_mat4_array(mvp_mat).as_ptr());
+    }
 
     unsafe {
         gl::Enable(gl::DEPTH_TEST);
@@ -89,6 +100,12 @@ fn main() {
                 sdl2::event::Event::Quit {..} => break 'main,
                 _ => {},
             }
+        }
+
+        let keys: std::collections::HashSet<sdl2::keyboard::Keycode> = event_pump.keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect();
+
+        if keys.contains(&Keycode::W) {
+            println!("w");
         }
 
         unsafe {
