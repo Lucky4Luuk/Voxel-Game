@@ -2,9 +2,10 @@
 
 extern crate sdl2;
 extern crate gl;
-extern crate cgmath;
+extern crate glm;
 
-use std::ffi::{CString};
+use std::os::raw;
+use std::ffi::{CStr, CString};
 
 pub mod render_gl;
 pub mod chunk;
@@ -72,6 +73,10 @@ fn main() {
     let render_shader_program = render_gl::Program::from_shaders(
         &[render_vert_shader, render_geom_shader, render_frag_shader]
     ).unwrap();
+
+    let proj_mat = render_gl::perspective(1.0, 720.0 / 1280.0, 0.02, 128.0);
+    let proj_mat_loc = gl::GetUniformLocation(render_shader_program.id(), CString::new("proj_mat").unwrap().as_ptr());
+    gl::UniformMatrix4fv(proj_mat_loc, 1, gl::FALSE, proj_mat);
 
     unsafe {
         gl::Enable(gl::DEPTH_TEST);

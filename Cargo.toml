@@ -5,7 +5,7 @@ authors = ["luukv"]
 
 [dependencies]
 gl = "0.10.0"
-cgmath = "0.16.1"
+glm = "0.2.3"
 
 [dependencies.sdl2]
 version = "0.31.0"

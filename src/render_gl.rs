@@ -1,6 +1,7 @@
 use gl;
 use std;
 use std::ffi::{CString, CStr};
+use glm;
 
 pub struct Program {
     id: gl::types::GLuint,
@@ -150,4 +151,14 @@ fn create_whitespace_cstring_with_len(len: usize) -> CString {
     buffer.extend([b' '].iter().cycle().take(len));
     // convert buffer to CString
     unsafe { CString::from_vec_unchecked(buffer) }
+}
+
+pub fn perspective(fovy: f32, aspect: f32, near: f32, far: f32) -> glm::Matrix4<f32> {
+    let f = (2.0 / fovy);
+    let c0 = glm::vec4(f / fovy, 0.0, 0.0, 0.0);
+    let c1 = glm::vec4(0.0, f, 0.0, 0.0);
+    let c2 = glm::vec4(0.0, 0.0, (far + near) / (near - far), 1.0);
+    let c3 = glm::vec4(0.0, 0.0, (2.0 * far * near) / (near - far), 0.0);
+
+    return glm::Matrix4::new(c0, c1, c2, c3);
 }
